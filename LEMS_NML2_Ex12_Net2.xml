@@ -1,0 +1,140 @@
+<Lems>
+
+    <!-- Example showing new types of network populations & projection templates in v2 -->
+
+    <!-- This is a file which can be read and executed by the LEMS Interpreter.
+    It imports the LEMS definitions of the core NeuroML 2 Components, creates
+    a model in "pure" NeuroML 2 and contains some LEMS elements for running
+    a simulation -->
+
+
+    <Target component="sim1"/>
+
+    <Include file="NeuroMLCoreDimensions.xml"/>
+    <Include file="Cells.xml"/>
+    <Include file="Networks.xml"/>
+    <Include file="Simulation.xml"/>
+
+
+    <!-- NeuroML 2 elements... -->
+
+    <spikeGenerator id="spiker" period="30ms"/>
+
+    <spikeArray id="spikes2">
+        <spike id="0" time="50ms"/>
+        <spike id="1" time="100ms"/>
+        <spike id="2" time="130ms"/>
+    </spikeArray>
+
+    <spikeArray id="spike100">
+        <spike id="0" time="100ms"/>
+    </spikeArray>
+
+
+    <iafCell id="iaf1" leakReversal="-60mV" thresh="-35mV" reset="-65mV" C="1e-5uF" leakConductance="5e-7mS"/>
+    <iafCell id="iaf2" leakReversal="-60mV" thresh="-35mV" reset="-70mV" C="1e-5uF" leakConductance="5.2e-7mS"/>
+
+
+    <expOneSynapse id="syn1" gbase="0.1nS" erev="0mV" tauDecay="2ms"/>
+
+    <expTwoSynapse id="syn2" gbase="0.1nS" erev="0mV" tauDecay="2ms" tauRise="0.05ms"/>
+    
+    
+    <blockingPlasticSynapse id="synNmda" gbase="5nS" tauDecay="10ms" tauRise="1ms" erev="0V">
+        
+        <blockMechanism type="voltageConcDepBlockMechanism" species="mg" blockConcentration="1.2mM" scalingConc="1.9205441817997078mM" scalingVolt="0.016129032258064516V"/>
+
+    </blockingPlasticSynapse>
+
+
+    <network id="net2">
+
+        <population id="spikersPop" component="spiker" size="1"/>
+
+        <population id="spikeArrayPop" component="spikes2" size="1"/>
+
+        <population id="spike100Pop" component="spike100" size="1"/>
+
+        <population id="iafPop" component="iaf1" size="9"/>
+
+        <projection id="projection1" presynapticPopulation="spike100Pop" postsynapticPopulation="iafPop" synapse="syn1">
+            <connection preCellId="../spike100Pop[0]" postCellId="../iafPop[0]"/>
+        </projection>
+        
+        <projection id="projection2" presynapticPopulation="spike100Pop" postsynapticPopulation="iafPop" synapse="syn1">
+            <connectionWD preCellId="../spike100Pop[0]" postCellId="../iafPop[1]" weight="0.5"  delay="10ms" />
+            <connectionWD preCellId="../spike100Pop[0]" postCellId="../iafPop[2]" weight="0.25" delay="15ms" />
+        </projection>
+        
+        <projection id="projection3" presynapticPopulation="spikeArrayPop" postsynapticPopulation="iafPop" synapse="syn2">
+            <connection preCellId="../spikeArrayPop[0]" postCellId="../iafPop[3]"/>
+        </projection>
+        
+        <projection id="projection4" presynapticPopulation="spikeArrayPop" postsynapticPopulation="iafPop" synapse="syn2">
+            <connectionWD preCellId="../spikeArrayPop[0]" postCellId="../iafPop[4]" weight="0.5"  delay="10ms" />
+            <connectionWD preCellId="../spikeArrayPop[0]" postCellId="../iafPop[5]" weight="0.25" delay="15ms" />
+        </projection>
+        
+        <projection id="projection5" presynapticPopulation="spikersPop" postsynapticPopulation="iafPop" synapse="synNmda">
+            <connection preCellId="../spikersPop[0]" postCellId="../iafPop[6]"/>
+        </projection>
+        
+        <projection id="projection6" presynapticPopulation="spikersPop" postsynapticPopulation="iafPop" synapse="synNmda">
+            <connectionWD preCellId="../spikersPop[0]" postCellId="../iafPop[7]" weight="0.5"  delay="10ms" />
+            <connectionWD preCellId="../spikersPop[0]" postCellId="../iafPop[8]" weight="0.25" delay="15ms" />
+        </projection>
+        
+
+    </network>
+
+    <!-- End of NeuroML 2 elements... -->
+
+
+
+    <Simulation id="sim1" length="300ms" step="0.005ms" target="net2">
+
+        <Display id="d1" title="Ex12: Spiking elements" timeScale="1ms" xmin="0" xmax="300" ymin="-5" ymax="105">
+            <Line id="30ms period spiker" quantity="spikersPop[0]/tsince" scale="1ms" color="#000000" timeScale="1ms"/>
+            <Line id="Single spike at 100ms" quantity="spike100Pop[0]/tsince" scale="1ms" color="#ffff00" timeScale="1ms"/>
+            <Line id="3 spikes" quantity="spikeArrayPop[0]/tsince" scale="1ms" color="#ff0000" timeScale="1ms"/>
+        </Display>
+
+        <Display id="d2" title="Ex12: Single Exp Syns" timeScale="1ms" xmin="0" xmax="300" ymin="-61" ymax="-58">
+            <Line id="No weight/delay" quantity="iafPop[0]/v" scale="1mV" color="#000000" timeScale="1ms"/>
+            <Line id="Weight:0.5;delay=10ms" quantity="iafPop[1]/v" scale="1mV" color="#00ff00" timeScale="1ms"/>
+            <Line id="Weight:0.25;delay=15ms" quantity="iafPop[2]/v" scale="1mV" color="#ff0000" timeScale="1ms"/>
+        </Display>
+
+        <Display id="d3" title="Ex12: Double Exp Syns" timeScale="1ms" xmin="0" xmax="300" ymin="-61" ymax="-58">
+            <Line id="No weight/delay" quantity="iafPop[3]/v" scale="1mV" color="#000000" timeScale="1ms"/>
+            <Line id="Weight:0.5;delay=10ms" quantity="iafPop[4]/v" scale="1mV" color="#00ff00" timeScale="1ms"/>
+            <Line id="Weight:0.25;delay=15ms" quantity="iafPop[5]/v" scale="1mV" color="#ff0000" timeScale="1ms"/>
+        </Display>
+
+        <Display id="d4" title="Ex12: NMDA Syns" timeScale="1ms" xmin="0" xmax="300" ymin="-62" ymax="-33">
+            <Line id="No weight/delay" quantity="iafPop[6]/v" scale="1mV" color="#000000" timeScale="1ms"/>
+            <Line id="Weight:0.5;delay=10ms" quantity="iafPop[7]/v" scale="1mV" color="#00ff00" timeScale="1ms"/>
+            <Line id="Weight:0.25;delay=15ms" quantity="iafPop[8]/v" scale="1mV" color="#ff0000" timeScale="1ms"/>
+        </Display>
+        
+        
+        <OutputFile id="of0" fileName="results/ex12.dat">
+            <OutputColumn id="0" quantity="iafPop[0]/v" />
+            <OutputColumn id="1" quantity="iafPop[1]/v" />
+            <OutputColumn id="2" quantity="iafPop[2]/v" />
+            <OutputColumn id="3" quantity="iafPop[3]/v" />
+            <OutputColumn id="4" quantity="iafPop[4]/v" />
+            <OutputColumn id="5" quantity="iafPop[5]/v" />
+            <OutputColumn id="6" quantity="iafPop[6]/v" />
+            <OutputColumn id="7" quantity="iafPop[7]/v" />
+            <OutputColumn id="8" quantity="iafPop[8]/v" />
+        </OutputFile>
+        
+        <EventOutputFile id="spikes" fileName="results/ex12.spikes" format="ID_TIME">
+            <EventSelection id="0" select="spikersPop[0]" eventPort="spike"/>
+        </EventOutputFile>
+
+    </Simulation>
+
+
+</Lems>
